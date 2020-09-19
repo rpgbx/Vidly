@@ -24,8 +24,6 @@ class Movies extends Component {
 		// create a variable called genres. This stores a key-value pair called 'name' with the value 'All Genres,' which is set in the state, and also clones the key-value pairs using the getGenres() function.
 		const genres = [this.state.selectedGenre, ...getGenres()];
 		const movies = getMovies();
-		console.log(movies);
-		console.log(this.componentDidMount);
 
 		this.setState({ movies, genres }); // this populates the movies array with the movies available, and genres with the selected genre + genre list.
 	}
@@ -73,7 +71,7 @@ class Movies extends Component {
 		Otherwise, it will display allMovies.
 		*/
 
-		const filtered =
+		let filtered =
 			selectedGenre && selectedGenre._id
 				? allMovies.filter((m) => m.genre._id === selectedGenre._id)
 				: allMovies;
@@ -83,10 +81,41 @@ class Movies extends Component {
 		
 		We use lodash to return a new array of movies that has already been sorted.
 		*/
-		const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+		const titleSort = (aMovie, bMovie) => {
+			aMovie = aMovie.title.toLowerCase();
+			bMovie = bMovie.title.toLowerCase();
+
+			aMovie = removeArticles(aMovie);
+			bMovie = removeArticles(bMovie);
+
+			if (sortColumn.order === "asc") {
+				if (aMovie > bMovie) return 1;
+				if (aMovie < bMovie) return -1;
+			} else {
+				if (aMovie > bMovie) return -1;
+				if (aMovie < bMovie) return 1;
+			}
+			return 0;
+		};
+
+		const removeArticles = (str) => {
+			let words = str.split(" ");
+			if (words.length <= 1) return str;
+			if (words[0] === "a" || words[0] === "the" || words[0] === "an")
+				return words.splice(1).join(" ");
+			return str;
+		};
+
+		const sorted = () => {
+			if (sortColumn.path === "title") {
+				return filtered.sort(titleSort);
+			} else {
+				return _.orderBy(filtered, [sortColumn.path], [sortColumn.order]);
+			}
+		};
 
 		// Finally, we paginate the data by creating a constant 'movies', and setting it to call the paginate function. We pass in our sorted list, the current page number, and the page size.)
-		const movies = paginate(sorted, currentPage, pageSize);
+		const movies = paginate(sorted(), currentPage, pageSize);
 
 		// The last step in getPageData is to return an object, where the totalCount and movies data is returned.)
 		return { totalCount: filtered.length, data: movies };
