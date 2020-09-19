@@ -1,10 +1,6 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 
-const handleTabClick = (click) => {
-	click.preventDefault();
-};
-
 const NavBar = () => {
 	return (
 		<nav className="navbar navbar-expand-lg navbar-light bg-light">
